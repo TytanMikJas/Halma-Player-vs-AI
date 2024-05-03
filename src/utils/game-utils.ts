@@ -1,6 +1,6 @@
 import { BOARD_SIZE } from "./constans";
 import { Player, TileColor } from "./enums";
-import { TypeTile } from "./types";
+import { Move, TypeTile } from "./types";
 
 const directions = [
   { dx: -1, dy: -1 },
@@ -14,16 +14,7 @@ const directions = [
 ];
 
 const getColor = (i: number, j: number) => {
-  if (
-    (i <= 1 && j <= 4) ||
-    (i == 2 && j <= 3) ||
-    (i == 3 && j <= 2) ||
-    (i == 4 && j <= 1) ||
-    (i == 11 && j >= 14) ||
-    (i == 12 && j >= 13) ||
-    (i == 13 && j >= 12) ||
-    (i >= 14 && j >= 11)
-  ) {
+  if (Player1Base(i, j) || Player2Base(i, j)) {
     return TileColor.GREEN;
   } else if ((i + j) % 2 === 0) {
     return TileColor.LIGHT_ORANGE;
@@ -41,20 +32,9 @@ export function generateInitialBoardState(): TypeTile[][] {
       const color = getColor(i, j);
       let player: Player = Player.NONE;
 
-      if (
-        (i <= 1 && j <= 4) ||
-        (i == 2 && j <= 3) ||
-        (i == 3 && j <= 2) ||
-        (i == 4 && j <= 1)
-      ) {
+      if (Player1Base(i, j)) {
         player = Player.PLAYER1;
-      }
-      if (
-        (i == 11 && j >= 14) ||
-        (i == 12 && j >= 13) ||
-        (i == 13 && j >= 12) ||
-        (i >= 14 && j >= 11)
-      ) {
+      } else if (Player2Base(i, j)) {
         player = Player.PLAYER2;
       }
 
@@ -68,34 +48,77 @@ export function generateInitialBoardState(): TypeTile[][] {
 export function generateAvailableMovesForPawn(
   x: number,
   y: number,
-  board: TypeTile[][]
-): [number, number, boolean][] {
-  const moves: [number, number, boolean][] = [];
-  directions.forEach(({ dx, dy }) => {
-    let nx = x + dx;
-    let ny = y + dy;
+  board: TypeTile[][],
+  moves: Move[] = [],
+  doubleJump: boolean = false,
+  visited: Set<string> = new Set<string>()
+): Move[] {
+  for (const { dx, dy } of directions) {
+    const nx = x + dx;
+    const ny = y + dy;
+
+    if (!isValidMove(nx, ny)) continue;
+
+    const newTile = board[nx][ny];
+    const visitedKey = `${nx}-${ny}`;
+
     if (
-      nx >= 0 &&
-      nx < board.length &&
-      ny >= 0 &&
-      ny < board[nx].length &&
-      board[nx][ny].player === Player.NONE
+      newTile.player === Player.NONE &&
+      !doubleJump &&
+      !visited.has(visitedKey)
     ) {
-      moves.push([nx, ny, false]);
-    }
-    if (board[nx] && board[nx][ny] && board[nx][ny].player !== Player.NONE) {
-      nx += dx;
-      ny += dy;
-      if (
-        nx >= 0 &&
-        nx < board.length &&
-        ny >= 0 &&
-        ny < board[nx].length &&
-        board[nx][ny].player === Player.NONE
-      ) {
-        moves.push([nx, ny, true]);
+      moves.push([nx, ny]);
+      visited.add(visitedKey);
+    } else if (newTile.player !== Player.NONE) {
+      const nx2 = nx + dx;
+      const ny2 = ny + dy;
+
+      if (!isValidMove(nx2, ny2)) continue;
+
+      const jumpTile = board[nx2][ny2];
+      const visitedKeyJump = `${nx2}-${ny2}`;
+
+      if (jumpTile.player === Player.NONE && !visited.has(visitedKeyJump)) {
+        moves.push([nx2, ny2]);
+        visited.add(visitedKeyJump);
+        generateAvailableMovesForPawn(nx2, ny2, board, moves, true, visited);
       }
     }
-  });
+  }
+
   return moves;
+}
+
+function isValidMove(x: number, y: number): boolean {
+  return x >= 0 && y >= 0 && x < BOARD_SIZE && y < BOARD_SIZE;
+}
+
+export function hasPlayerWon(board: TypeTile[][], player: Player): boolean {
+  return board.every(row => {
+    return row.every(tile => {
+      if (tile.player !== player) {
+        return true;
+      } else {
+        return player === Player.PLAYER1 ? Player2Base(tile.x, tile.y) : Player1Base(tile.x, tile.y);
+      }
+    });
+  });
+}
+
+function Player1Base(x: number, y: number) {
+  return (
+    (x <= 1 && y <= 4) ||
+    (x == 2 && y <= 3) ||
+    (x == 3 && y <= 2) ||
+    (x == 4 && y <= 1)
+  );
+}
+
+function Player2Base(x: number, y: number) {
+  return (
+    (x == 11 && y >= 14) ||
+    (x == 12 && y >= 13) ||
+    (x == 13 && y >= 12) ||
+    (x >= 14 && y >= 11)
+  );
 }

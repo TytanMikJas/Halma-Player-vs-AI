@@ -4,7 +4,7 @@ import {
   generateAvailableMovesForPawn,
   generateInitialBoardState,
 } from "../utils/game-utils";
-import { TypeTile } from "../utils/types";
+import { Move, TypeTile } from "../utils/types";
 import { create } from "zustand";
 
 export interface GameStoreData {
@@ -12,7 +12,7 @@ export interface GameStoreData {
   currentPlayer: Player;
   turn: Player;
   selectedPawn: [number, number] | null;
-  availableMoves: [number, number, boolean][];
+  availableMoves: Move[];
 }
 
 const initialGameStore: GameStoreData = {
