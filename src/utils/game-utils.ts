@@ -1,17 +1,6 @@
-import { BOARD_SIZE } from "./constans";
+import { BOARD_SIZE, directions, PLAYER1_BASE, PLAYER2_BASE } from "./constans";
 import { Player, TileColor } from "./enums";
 import { Move, TypeTile } from "./types";
-
-const directions = [
-  { dx: -1, dy: -1 },
-  { dx: -1, dy: 0 },
-  { dx: -1, dy: 1 },
-  { dx: 0, dy: -1 },
-  { dx: 0, dy: 1 },
-  { dx: 1, dy: -1 },
-  { dx: 1, dy: 0 },
-  { dx: 1, dy: 1 },
-];
 
 const getColor = (i: number, j: number) => {
   if (Player1Base(i, j) || Player2Base(i, j)) {
@@ -94,15 +83,8 @@ function isValidMove(x: number, y: number): boolean {
 }
 
 export function hasPlayerWon(board: TypeTile[][], player: Player): boolean {
-  return board.every(row => {
-    return row.every(tile => {
-      if (tile.player !== player) {
-        return true;
-      } else {
-        return player === Player.PLAYER1 ? Player2Base(tile.x, tile.y) : Player1Base(tile.x, tile.y);
-      }
-    });
-  });
+  const enemyBase = player === Player.PLAYER1 ? PLAYER2_BASE : PLAYER1_BASE;
+  return enemyBase.every(([x, y]) => { return board[x][y].player === player; });
 }
 
 function Player1Base(x: number, y: number) {

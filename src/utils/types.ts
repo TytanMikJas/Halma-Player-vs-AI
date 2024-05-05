@@ -8,3 +8,5 @@ export type TypeTile = {
 };
 
 export type Move = [number, number];
+
+export type Strategy = (board: TypeTile[][], player: Player) => number;
