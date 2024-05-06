@@ -8,7 +8,7 @@ import {
 } from "../utils/game-utils";
 import { AiStrategy, Coord, Strategy, TypeTile } from "../utils/types";
 import { create } from "zustand";
-import { minimaxStrategy } from "../utils/scripts";
+import { minimaxAlphaBetaStrategy } from "../utils/scripts";
 import { CustomStrategy } from "../utils/strategies";
 
 export interface InitialMoveStore {
@@ -37,7 +37,7 @@ const initialGameStore: InitialGameStore = {
   turn: Player.PLAYER1,
   ...initialMoveStore,
   strategy: CustomStrategy,
-  botStrategy: minimaxStrategy,
+  botStrategy: minimaxAlphaBetaStrategy,
   globalLoop: false,
   wonMessage: null,
 };

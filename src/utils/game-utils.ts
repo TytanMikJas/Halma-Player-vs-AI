@@ -43,7 +43,8 @@ export function generateAvailableMovesForPawn(
   doubleJump: boolean = false,
   visited: Set<string> = new Set<string>()
 ): Coord[] {
-  for (const { dx, dy } of directions) {
+  const playerDirections = board[x][y].player === Player.PLAYER1 ? directions.slice(3) : directions.slice(0, -3);
+  for (const { dx, dy } of playerDirections) {
     const nx = x + dx;
     const ny = y + dy;
 
@@ -145,30 +146,22 @@ export const bestMoveForTile = (
   return bestMove;
 };
 
-export const getChildren = (
-  board: TypeTile[][],
-  player: Player
-): TypeTile[][][] => {
+export const getChildren = (board: TypeTile[][], player: Player): TypeTile[][][] => {
   const availablePawns = board.flat().filter((t) => t.player === player);
-  const boards: TypeTile[][][] = [];
+  const uniqueBoards = new Map<string, TypeTile[][]>();
+  
   availablePawns.forEach((tile) => {
     const movesForTile = generateAvailableMovesForPawn(tile.x, tile.y, board);
-    boards.push(...getBoards(tile.x, tile.y, movesForTile, board, player));
+    movesForTile.forEach(move => {
+      const boardKey = `${tile.x},${tile.y}->${move[0]},${move[1]}`;
+      if (!uniqueBoards.has(boardKey)) {
+        const newBoard = cloneDeep(board);
+        newBoard[tile.x][tile.y].player = Player.NONE;
+        newBoard[move[0]][move[1]].player = player;
+        uniqueBoards.set(boardKey, newBoard);
+      }
+    });
   });
-  return boards;
-};
 
-const getBoards = (
-  x: number,
-  y: number,
-  moves: Coord[],
-  board: TypeTile[][],
-  player: Player
-): TypeTile[][][] => {
-  return moves.map((move) => {
-    const newBoard = cloneDeep(board);
-    newBoard[x][y].player = Player.NONE;
-    newBoard[move[0]][move[1]].player = player;
-    return newBoard;
-  });
+  return Array.from(uniqueBoards.values());
 };

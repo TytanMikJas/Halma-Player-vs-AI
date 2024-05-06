@@ -147,16 +147,10 @@ export const MobilityStrategy: Strategy = (board) => {
 // custom strategy based on all upper ones
 export const CustomStrategy: Strategy = (board) => {
   const occupationScore = OccupyBaseStrategy(board);
-  const defenseScore = PreventOccupationStrategy(board);
   const distanceScore = DistanceToBaseStrategy(board);
-  const doubleJumpScore = DoubleJumpStrategy(board);
-  const mobilityScore = MobilityStrategy(board);
 
   return (
     occupationScore * weights.occupationWeight +
-    defenseScore * weights.defenseWeight +
-    distanceScore * weights.distanceWeight +
-    doubleJumpScore * weights.doubleJumpWeight +
-    mobilityScore * weights.mobilityWeight
+    distanceScore * weights.distanceWeight
   );
 };
