@@ -32,10 +32,10 @@ export const directions = [
 ];
 
 export const weights = {
-    occupationWeight: 50,
-    defenseWeight: 30,
-    distanceWeight: 3,
-    doubleJumpWeight: 40,
-    mobilityWeight: 20,
-    enemyMobilityReductionWeight: 10,
+    occupationWeight: 30,
+    defenseWeight: 10,
+    distanceWeight: 5,
+    doubleJumpWeight: 5,
+    mobilityWeight: 5,
+    enemyMobilityReductionWeight: 1,
 };

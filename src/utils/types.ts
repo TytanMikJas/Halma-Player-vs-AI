@@ -7,6 +7,18 @@ export type TypeTile = {
   player: Player;
 };
 
-export type Move = [number, number];
+export type Coord = [number, number];
+
+export type Move = {
+  value: number;
+  board: TypeTile[][];
+}
 
 export type Strategy = (board: TypeTile[][], player: Player) => number;
+
+export type TileMoves = {
+  [key: string]: {
+      tile: TypeTile,
+      moves: Move[]
+  }
+}
