@@ -149,3 +149,28 @@ export const evaluateBoard = (
     };
   });
 };
+
+export const getChildren = (board: TypeTile[][], player: Player): TypeTile[][][] => {
+  const availablePawns = board.flat().filter((t) => t.player === player);
+  const boards: TypeTile[][][] = [];
+  availablePawns.forEach((tile) => {
+    const movesForTile = generateAvailableMovesForPawn(tile.x, tile.y, board);
+    boards.push(...getBoards(tile.x, tile.y, movesForTile, board, player));
+  });
+  return boards;
+}
+
+const getBoards = (
+  x: number,
+  y: number,
+  moves: Coord[],
+  board: TypeTile[][],
+  player: Player,
+): TypeTile[][][] => {
+  return moves.map((move) => {
+    const newBoard = cloneDeep(board);
+    newBoard[x][y].player = Player.NONE;
+    newBoard[move[0]][move[1]].player = player;
+    return newBoard;
+  });
+};
