@@ -1,34 +1,54 @@
 import { devtools } from "zustand/middleware";
 import { Player } from "../utils/enums";
 import {
+  bestMoveForStrategy,
   generateAvailableMovesForPawn,
   generateInitialBoardState,
+  hasPlayerWon,
 } from "../utils/game-utils";
-import { Coord, TypeTile } from "../utils/types";
+import { AiStrategy, Coord, Strategy, TypeTile } from "../utils/types";
 import { create } from "zustand";
+import { minimaxStrategy } from "../utils/scripts";
+import { CustomStrategy } from "../utils/strategies";
 
-export interface GameStoreData {
-  tiles: TypeTile[][];
-  currentPlayer: Player;
-  turn: Player;
-  selectedPawn: [number, number] | null;
+export interface InitialMoveStore {
+  selectedPawn: Coord | null;
   availableMoves: Coord[];
 }
 
-const initialGameStore: GameStoreData = {
-  currentPlayer: Player.PLAYER1,
-  tiles: generateInitialBoardState(),
-  turn: Player.PLAYER1,
+export interface InitialGameStore extends InitialMoveStore {
+  tiles: TypeTile[][];
+  currentPlayer: Player;
+  turn: Player;
+  strategy: Strategy;
+  botStrategy: AiStrategy;
+  globalLoop: boolean;
+  wonMessage: string | null;
+}
+
+const initialMoveStore: InitialMoveStore = {
   selectedPawn: null,
   availableMoves: [],
 };
 
-export interface GameStore extends GameStoreData {
+const initialGameStore: InitialGameStore = {
+  currentPlayer: Player.PLAYER1,
+  tiles: generateInitialBoardState(),
+  turn: Player.PLAYER1,
+  ...initialMoveStore,
+  strategy: CustomStrategy,
+  botStrategy: minimaxStrategy,
+  globalLoop: false,
+  wonMessage: null,
+};
+
+export interface GameStore extends InitialGameStore {
   setSelectedPawn: (x: number, y: number) => void;
   deselectPawn: () => void;
   selectAmSelected: (x: number, y: number) => boolean;
   selectAmAllowed: (x: number, y: number) => boolean;
   movePawn: (x: number, y: number) => void;
+  performAiMove: (loop?: boolean) => void;
 }
 
 export const useGameStore = create<GameStore, [["zustand/devtools", never]]>(
@@ -66,8 +86,14 @@ export const useGameStore = create<GameStore, [["zustand/devtools", never]]>(
       return availableMoves.some(([nx, ny]) => nx === x && ny === y);
     },
     movePawn(x, y) {
-      const { selectedPawn, availableMoves, tiles, currentPlayer, turn } =
-        get();
+      const {
+        selectedPawn,
+        availableMoves,
+        tiles,
+        currentPlayer,
+        turn,
+        performAiMove,
+      } = get();
       if (turn !== currentPlayer) return;
       if (selectedPawn == null) return;
       if (!availableMoves.some(([nx, ny]) => nx === x && ny === y)) return;
@@ -76,7 +102,7 @@ export const useGameStore = create<GameStore, [["zustand/devtools", never]]>(
       const newTiles = tiles.map((row) =>
         row.map((tile) => {
           if (tile.x === sx && tile.y === sy) {
-            return { ...tile, player: Player.NONE};
+            return { ...tile, player: Player.NONE };
           }
           if (tile.x === x && tile.y === y) {
             return { ...tile, player: currentPlayer };
@@ -85,11 +111,44 @@ export const useGameStore = create<GameStore, [["zustand/devtools", never]]>(
         })
       );
 
+      if (hasPlayerWon(newTiles, currentPlayer)) {
+        set(() => ({ wonMessage: `Player ${currentPlayer} has won!` }));
+        return;
+      }
+
       set(() => ({
         tiles: newTiles,
-        selectedPawn: null,
-        availableMoves: [],
+        ...initialMoveStore,
+        turn: Player.PLAYER2,
       }));
+
+      performAiMove();
+    },
+    performAiMove(loop = false) {
+      const { tiles, turn, botStrategy, strategy, performAiMove, globalLoop } =
+        get();
+
+      const newTiles =
+        turn === Player.PLAYER1
+          ? bestMoveForStrategy(tiles, turn, strategy).board
+          : botStrategy(tiles, turn).board;
+
+      if (hasPlayerWon(newTiles, turn)) {
+        set(() => ({
+          wonMessage: `Player ${turn} has won!`,
+        }));
+        return;
+      }
+
+      set(() => ({
+        turn: turn === Player.PLAYER1 ? Player.PLAYER2 : Player.PLAYER1,
+        tiles: newTiles,
+        ...initialMoveStore,
+      }));
+
+      if (loop) {
+        performAiMove(false || globalLoop);
+      }
     },
   }))
 );

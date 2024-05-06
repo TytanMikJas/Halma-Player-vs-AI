@@ -1,6 +1,6 @@
 import { BOARD_SIZE, directions, PLAYER1_BASE, PLAYER2_BASE } from "./constans";
 import { Player, TileColor } from "./enums";
-import { Coord, Move, Strategy, TileMoves, TypeTile } from "./types";
+import { Coord, Move, Strategy, TypeTile } from "./types";
 import { cloneDeep } from "lodash";
 
 const getColor = (i: number, j: number) => {
@@ -108,49 +108,47 @@ function Player2Base(x: number, y: number) {
   );
 }
 
-export const calculateMoves = (
+export const bestMoveForStrategy = (
   board: TypeTile[][],
   player: Player,
   strategy: Strategy
-): TileMoves => {
+): Move => {
   const availablePawns = board.flat().filter((t) => t.player === player);
-  const moves: TileMoves = {};
+  const moves: Move[] = [];
   availablePawns.forEach((tile) => {
     const movesForTile = generateAvailableMovesForPawn(tile.x, tile.y, board);
-    const evaluatedMoves = evaluateBoard(
-      tile.x,
-      tile.y,
-      movesForTile,
-      board,
-      player,
-      strategy
-    );
-    moves[`${tile.x}-${tile.y}`] = { tile, moves: evaluatedMoves };
+    moves.push(bestMoveForTile(tile.x, tile.y, movesForTile, board, player, strategy));
   });
-
-  return moves;
+  
+  return moves.reduce((acc, cur) => (cur.value > acc.value ? cur : acc), { value: -Infinity, board: board });
 };
 
-export const evaluateBoard = (
+export const bestMoveForTile = (
   x: number,
   y: number,
   moves: Coord[],
   board: TypeTile[][],
   player: Player,
   strategy: Strategy
-): Move[] => {
-  return moves.map((move) => {
+): Move => {
+  let bestMove = { value: -Infinity, board: board };
+
+  moves.forEach((move) => {
     const newBoard = cloneDeep(board);
     newBoard[x][y].player = Player.NONE;
     newBoard[move[0]][move[1]].player = player;
-    return {
-      value: strategy(newBoard),
-      board: newBoard,
-    };
+    const curVal = strategy(newBoard);
+    if (curVal > bestMove.value) {
+      bestMove = { value: curVal, board: newBoard };
+    }
   });
+  return bestMove;
 };
 
-export const getChildren = (board: TypeTile[][], player: Player): TypeTile[][][] => {
+export const getChildren = (
+  board: TypeTile[][],
+  player: Player
+): TypeTile[][][] => {
   const availablePawns = board.flat().filter((t) => t.player === player);
   const boards: TypeTile[][][] = [];
   availablePawns.forEach((tile) => {
@@ -158,14 +156,14 @@ export const getChildren = (board: TypeTile[][], player: Player): TypeTile[][][]
     boards.push(...getBoards(tile.x, tile.y, movesForTile, board, player));
   });
   return boards;
-}
+};
 
 const getBoards = (
   x: number,
   y: number,
   moves: Coord[],
   board: TypeTile[][],
-  player: Player,
+  player: Player
 ): TypeTile[][][] => {
   return moves.map((move) => {
     const newBoard = cloneDeep(board);

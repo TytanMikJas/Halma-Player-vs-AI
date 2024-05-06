@@ -1,9 +1,17 @@
 import { Player } from "./enums";
 import { getChildren, hasPlayerWon } from "./game-utils";
 import { CustomStrategy } from "./strategies";
-import { Move, TypeTile } from "./types";
+import { AiStrategy, Move, TypeTile } from "./types";
 
-export function minmax(
+export const minimaxStrategy: AiStrategy = (board, player) => {
+  return minimax(board, 2, player);
+};
+
+export const minimaxAlphaBetaStrategy: AiStrategy = (board, player) => {
+  return minimaxAlphaBeta(board, 2, player, -Infinity, Infinity);
+}
+
+function minimax(
   board: TypeTile[][],
   depth: number,
   player: Player
@@ -21,7 +29,7 @@ export function minmax(
   if (player === Player.PLAYER1) {
     let maxVal = -Infinity;
     for (const child of getChildren(board, player)) {
-      const childEval = minmax(child, depth - 1, Player.PLAYER2);
+      const childEval = minimax(child, depth - 1, Player.PLAYER2);
       if (childEval.value > maxVal) {
         bestMove = childEval.board;
         maxVal = childEval.value;
@@ -31,7 +39,7 @@ export function minmax(
   } else {
     let minVal = Infinity;
     for (const child of getChildren(board, player)) {
-      const childEval = minmax(child, depth - 1, Player.PLAYER1);
+      const childEval = minimax(child, depth - 1, Player.PLAYER1);
       if (childEval.value < minVal) {
         bestMove = childEval.board;
         minVal = childEval.value;
@@ -41,7 +49,7 @@ export function minmax(
   }
 }
 
-export function minimaxAlphaBeta(
+function minimaxAlphaBeta(
   board: TypeTile[][],
   depth: number,
   player: Player,
