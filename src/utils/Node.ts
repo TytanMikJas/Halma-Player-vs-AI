@@ -20,7 +20,7 @@ export function createRoot(
   const minmaxStrategy = CustomStrategy;
 
   const root = new Node(
-    minmaxStrategy(board, player),
+    minmaxStrategy(board),
     true,
     board,
     createChildren(

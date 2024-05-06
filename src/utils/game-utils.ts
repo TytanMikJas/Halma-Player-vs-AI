@@ -144,7 +144,7 @@ export const evaluateBoard = (
     newBoard[x][y].player = Player.NONE;
     newBoard[move[0]][move[1]].player = player;
     return {
-      value: strategy(newBoard, player),
+      value: strategy(newBoard),
       board: newBoard,
     };
   });

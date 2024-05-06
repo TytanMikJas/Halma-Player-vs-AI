@@ -14,7 +14,7 @@ export type Move = {
   board: TypeTile[][];
 }
 
-export type Strategy = (board: TypeTile[][], player: Player) => number;
+export type Strategy = (board: TypeTile[][]) => number;
 export type AiStrategy = (board: TypeTile[][], player: Player) => Move;
 
 export type TileMoves = {

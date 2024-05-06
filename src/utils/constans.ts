@@ -37,5 +37,4 @@ export const weights = {
     distanceWeight: 5,
     doubleJumpWeight: 5,
     mobilityWeight: 5,
-    enemyMobilityReductionWeight: 1,
 };
