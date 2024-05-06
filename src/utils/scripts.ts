@@ -1,9 +1,9 @@
-import { Strategy } from "./types";
 import { Player } from "./enums";
 import { hasPlayerWon } from "./game-utils";
 import { createRoot, Node } from "./Node";
+import { AiStrategy, Move } from "./types";
 
-export const MinmaxStrategy: Strategy = (board, player): number => {
+export const MinmaxStrategy: AiStrategy = (board, player): Move => {
   const depth = 2;
 
   const root = createRoot(board, player, depth);
@@ -11,7 +11,7 @@ export const MinmaxStrategy: Strategy = (board, player): number => {
   return minmax(root, depth);
 };
 
-export const AlphaBetaStrategy: Strategy = (board, player): number => {
+export const AlphaBetaStrategy: AiStrategy = (board, player): Move => {
   const depth = 2;
 
   const root = createRoot(board, player, depth);
@@ -19,30 +19,38 @@ export const AlphaBetaStrategy: Strategy = (board, player): number => {
   return minimaxAlphaBeta(root, depth, -Infinity, Infinity);
 };
 
-function minmax(node: Node, depth: number): number {
+function minmax(node: Node, depth: number): Move {
   if (
     depth === 0 ||
     hasPlayerWon(node.board, Player.PLAYER1) ||
     hasPlayerWon(node.board, Player.PLAYER2) ||
     node.children.length === 0
   ) {
-    return node.value;
+    return { value: node.value, board: node.board };
   }
+
+  let bestMove = node.children[0].board;
 
   if (node.max) {
     let maxVal = -Infinity;
-    node.children.forEach((child) => {
-      const val = minmax(child, depth - 1);
-      maxVal = Math.max(maxVal, val);
-    });
-    return maxVal;
+    for (const child of node.children) {
+      const childEval = minmax(child, depth - 1);
+      if (childEval.value > maxVal) {
+        bestMove = childEval.board;
+        maxVal = childEval.value;
+      }
+    }
+    return {value: maxVal, board: bestMove};
   } else {
     let minVal = Infinity;
-    node.children.forEach((child) => {
-      const val = minmax(child, depth - 1);
-      minVal = Math.min(minVal, val);
-    });
-    return minVal;
+    for (const child of node.children) {
+      const childEval = minmax(child, depth - 1);
+      if (childEval.value < minVal) {
+        bestMove = childEval.board;
+        minVal = childEval.value;
+      }
+    }
+    return {value: minVal, board: bestMove};
   }
 }
 
@@ -51,40 +59,48 @@ function minimaxAlphaBeta(
   depth: number,
   alpha: number,
   beta: number
-): number {
+): Move {
   if (
     depth === 0 ||
     node.children.length === 0 ||
     hasPlayerWon(node.board, Player.PLAYER1) ||
     hasPlayerWon(node.board, Player.PLAYER2)
   ) {
-    return node.value;
+    return { value: node.value, board: node.board };
   }
+
+  let bestMove = node.children[0].board;
 
   if (node.max) {
     let maxVal = -Infinity;
     for (const child of node.children) {
-      const val = minimaxAlphaBeta(child, depth - 1, alpha, beta);
-      maxVal = Math.max(maxVal, val);
+      const childEval = minimaxAlphaBeta(child, depth - 1, alpha, beta);
+      if (childEval.value > maxVal) {
+        bestMove = childEval.board;
+        maxVal = childEval.value;
+      }
       alpha = Math.max(alpha, maxVal);
 
       if (beta <= alpha) {
         break;
       }
     }
-    return maxVal;
+    return {value: maxVal, board: bestMove};
 
   } else {
     let minVal = Infinity;
     for (const child of node.children) {
-      const val = minimaxAlphaBeta(child, depth - 1, alpha, beta);
-      minVal = Math.min(minVal, val);
+      const childEval = minimaxAlphaBeta(child, depth - 1, alpha, beta);
+      if (childEval.value < minVal) {
+        bestMove = childEval.board;
+        minVal = childEval.value;
+      }
       beta = Math.min(beta, minVal);
 
       if (beta <= alpha) {
         break;
       }
     }
-    return minVal;
+    return {value: minVal, board: bestMove};
   }
 }
