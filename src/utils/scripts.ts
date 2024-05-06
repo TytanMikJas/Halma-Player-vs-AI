@@ -31,7 +31,7 @@ function minimax(
     for (const child of getChildren(board, player)) {
       const childEval = minimax(child, depth - 1, Player.PLAYER2);
       if (childEval.value > maxVal) {
-        bestMove = childEval.board;
+        bestMove = board;
         maxVal = childEval.value;
       }
     }
@@ -71,7 +71,7 @@ function minimaxAlphaBeta(
     for (const child of getChildren(board, player)) {
       const childEval = minimaxAlphaBeta(child, depth - 1, Player.PLAYER2, alpha, beta);
       if (childEval.value > maxVal) {
-        bestMove = childEval.board;
+        bestMove = board;
         maxVal = childEval.value;
       }
       alpha = Math.max(alpha, childEval.value);
