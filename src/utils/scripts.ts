@@ -4,11 +4,19 @@ import { CustomStrategy } from "./strategies";
 import { AiStrategy, Move, TypeTile } from "./types";
 
 export const minimaxStrategy: AiStrategy = (board, player) => {
-  return minimax(board, 2, player);
+  return minimax(board, 3, player);
 };
 
 export const minimaxAlphaBetaStrategy: AiStrategy = (board, player) => {
-  return minimaxAlphaBeta(board, 2, player, -Infinity, Infinity);
+
+  const minmaxAlphaBetaReturn =  minimaxAlphaBeta(board, 3, player, -Infinity, Infinity);
+
+  const newBoard = minmaxAlphaBetaReturn.board;
+
+  console.log(player);
+  newBoard.map((row, i) => row.map((_, j) => (newBoard[i][j].player !== board[i][j].player ? console.log(`${i} ${j}`) : null)));
+
+  return minmaxAlphaBetaReturn;
 };
 
 function minimax(board: TypeTile[][], depth: number, player: Player): Move {

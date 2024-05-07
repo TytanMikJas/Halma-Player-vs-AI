@@ -1,7 +1,6 @@
 import { devtools } from "zustand/middleware";
 import { Player } from "../utils/enums";
 import {
-  bestMoveForStrategy,
   generateAvailableMovesForPawn,
   generateInitialBoardState,
   hasPlayerWon,
@@ -38,7 +37,7 @@ const initialGameStore: InitialGameStore = {
   ...initialMoveStore,
   strategy: CustomStrategy,
   botStrategy: minimaxAlphaBetaStrategy,
-  globalLoop: false,
+  globalLoop: true,
   wonMessage: null,
 };
 
@@ -122,16 +121,14 @@ export const useGameStore = create<GameStore, [["zustand/devtools", never]]>(
         turn: Player.PLAYER2,
       }));
 
-      performAiMove();
+      setTimeout(() => {
+        performAiMove();
+      }, 20);
     },
     performAiMove(loop = false) {
-      const { tiles, turn, botStrategy, strategy, performAiMove, globalLoop } =
-        get();
+      const { tiles, turn, botStrategy, performAiMove, globalLoop } = get();
 
-      const newTiles =
-        turn === Player.PLAYER1
-          ? bestMoveForStrategy(tiles, turn, strategy).board
-          : botStrategy(tiles, turn).board;
+      const newTiles = botStrategy(tiles, turn).board;
 
       if (hasPlayerWon(newTiles, turn)) {
         set(() => ({
@@ -147,7 +144,9 @@ export const useGameStore = create<GameStore, [["zustand/devtools", never]]>(
       }));
 
       if (loop) {
-        performAiMove(false || globalLoop);
+        setTimeout(() => {
+          performAiMove(false || globalLoop);
+        }, 20);
       }
     },
   }))

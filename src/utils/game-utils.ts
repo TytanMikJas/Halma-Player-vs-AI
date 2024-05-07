@@ -155,7 +155,7 @@ export const getChildren = (board: TypeTile[][], player: Player): TypeTile[][][]
     movesForTile.forEach(move => {
       const boardKey = `${tile.x},${tile.y}->${move[0]},${move[1]}`;
       if (!uniqueBoards.has(boardKey)) {
-        const newBoard = cloneDeep(board);
+        const newBoard = board.map((row) => row.map((tile) => ({ ...tile })));
         newBoard[tile.x][tile.y].player = Player.NONE;
         newBoard[move[0]][move[1]].player = player;
         uniqueBoards.set(boardKey, newBoard);

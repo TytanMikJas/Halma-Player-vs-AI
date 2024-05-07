@@ -16,7 +16,7 @@ export default function Game() {
   };
 
   return (
-    <div className="flex flex-col items-center w-full h-screen bg-gray-700 py-4">
+    <div className="flex flex-col items-center w-full h-screen bg-gray-700 py-2">
       {wonMessage && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-blue-600 bg-opacity-80 text-black rounded p-5">
           <div className="text-3xl">{wonMessage}</div>
@@ -26,7 +26,7 @@ export default function Game() {
       <div className="flex space-x-8">
         {selectedPawn && (
           <button
-            className="border-gray-500 shadow-md border-2 rounded-lg bg-gray-300 text-3xl px-1 py-1 my-4"
+            className="border-gray-500 shadow-md border-2 rounded-lg bg-gray-300 text-3xl px-1 py-1 my-2"
             onClick={deselectPawn}
           >
             Unselect current Pawn
@@ -34,7 +34,7 @@ export default function Game() {
         )}
         {YOUR_TURN && !selectedPawn && (
           <button
-            className="border-gray-500 shadow-md border-2 rounded-lg bg-gray-300 text-3xl px-1 py-1 my-4"
+            className="border-gray-500 shadow-md border-2 rounded-lg bg-gray-300 text-3xl px-1 py-1 my-2"
             onClick={handleLocalLoop}
           >
             Strategy Move
